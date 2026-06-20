@@ -1,0 +1,339 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Human Scanner Website Verification System</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+}
+
+.header{
+    background:#1d4ed8;
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+input{
+    width:75%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:5px;
+    font-size:16px;
+}
+
+button{
+    padding:12px 20px;
+    background:#1d4ed8;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#153ea8;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+table td{
+    border:1px solid #ddd;
+    padding:10px;
+}
+
+.safe{
+    color:green;
+    font-weight:bold;
+}
+
+.warning{
+    color:orange;
+    font-weight:bold;
+}
+
+.danger{
+    color:red;
+    font-weight:bold;
+}
+
+.report-box{
+    margin-top:20px;
+    padding:15px;
+    background:#f8f9fa;
+    border-left:5px solid #1d4ed8;
+    border-radius:5px;
+}
+
+#reader{
+    width:100%;
+    max-width:500px;
+    margin-top:15px;
+}
+
+.footer{
+    text-align:center;
+    padding:20px;
+    margin-top:30px;
+    background:#1d4ed8;
+    color:white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>Human Scanner Website Verification System</h1>
+    <p>Detect Suspicious Websites and Improve Online Security</p>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Website Scanner</h2>
+<br>
+
+<input
+type="text"
+id="urlInput"
+placeholder="https://example.com">
+
+<button onclick="scanWebsite()">
+Verify Website
+</button>
+
+<hr style="margin:20px 0;">
+
+<h2>QR Code Scanner</h2>
+
+<p>Scan a QR code containing a website URL.</p>
+
+<div id="reader"></div>
+
+<p id="scanStatus">
+Ready to scan QR code.
+</p>
+
+<div id="output"></div>
+
+</div>
+
+</div>
+
+<div class="footer">
+ICT Research Project - Human Scanner Verification System
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<script>
+
+function scanWebsite(){
+
+const url=document.getElementById("urlInput").value.trim();
+const output=document.getElementById("output");
+
+if(url===""){
+output.innerHTML="<p class='danger'>Please enter a website URL.</p>";
+return;
+}
+
+let score=100;
+let findings=[];
+
+try{
+new URL(url);
+}
+catch{
+output.innerHTML="<p class='danger'>Invalid URL format.</p>";
+return;
+}
+
+const domain=new URL(url).hostname;
+
+if(!url.startsWith("https://")){
+score-=30;
+findings.push("Website does not use HTTPS encryption.");
+}
+
+if(url.length>80){
+score-=10;
+findings.push("URL is unusually long.");
+}
+
+const suspiciousKeywords=[
+"verify",
+"gift",
+"free",
+"bank",
+"secure",
+"update",
+"claim",
+"reward",
+"paypal",
+"login",
+"account",
+"password"
+];
+
+suspiciousKeywords.forEach(word=>{
+if(url.toLowerCase().includes(word)){
+score-=8;
+findings.push("Suspicious keyword detected: " + word);
+}
+});
+
+const ipRegex=/https?:\/\/\d+\.\d+\.\d+\.\d+/;
+
+if(ipRegex.test(url)){
+score-=25;
+findings.push("Website uses an IP address instead of a domain.");
+}
+
+let reputation="";
+let riskClass="";
+let summary="";
+
+if(score>=80){
+
+reputation="SAFE";
+riskClass="safe";
+
+summary=
+"This website appears relatively safe based on the URL analysis. No major warning signs were detected. Always verify the legitimacy of a website before entering personal information.";
+
+}
+else if(score>=50){
+
+reputation="MEDIUM RISK";
+riskClass="warning";
+
+summary=
+"This website contains some indicators that require caution. Carefully review the website before sharing personal information or login credentials.";
+
+}
+else{
+
+reputation="HIGH RISK";
+riskClass="danger";
+
+summary=
+"This website contains multiple suspicious indicators commonly associated with phishing attacks, fake websites, identity theft attempts, or other online threats. Avoid entering sensitive information.";
+
+}
+
+output.innerHTML=`
+
+<h2 style="margin-top:20px;">Website Analysis Report</h2>
+
+<table>
+
+<tr>
+<td><strong>Domain</strong></td>
+<td>${domain}</td>
+</tr>
+
+<tr>
+<td><strong>Website URL</strong></td>
+<td>${url}</td>
+</tr>
+
+<tr>
+<td><strong>Security Score</strong></td>
+<td>${score}/100</td>
+</tr>
+
+<tr>
+<td><strong>Risk Level</strong></td>
+<td class="${riskClass}">${reputation}</td>
+</tr>
+
+<tr>
+<td><strong>HTTPS Protected</strong></td>
+<td>${url.startsWith("https://") ? "Yes" : "No"}</td>
+</tr>
+
+<tr>
+<td><strong>Security Findings</strong></td>
+<td>
+${findings.length
+? findings.join("<br>")
+: "No suspicious indicators detected."
+}
+</td>
+</tr>
+
+</table>
+
+<div class="report-box">
+<h3>Report Summary</h3>
+<p>${summary}</p>
+</div>
+
+`;
+
+}
+
+function onScanSuccess(decodedText){
+
+document.getElementById("scanStatus").innerHTML =
+"QR Code Detected Successfully";
+
+document.getElementById("urlInput").value =
+decodedText;
+
+scanWebsite();
+}
+
+function onScanFailure(error){
+}
+
+const html5QrcodeScanner =
+new Html5QrcodeScanner(
+"reader",
+{
+fps:10,
+qrbox:250
+}
+);
+
+html5QrcodeScanner.render(
+onScanSuccess,
+onScanFailure
+);
+
+</script>
+
+</body>
+</html>
+```
